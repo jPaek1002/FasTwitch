@@ -1,16 +1,16 @@
 import tkinter as tk
 import cv2
 from PIL import ImageTk, Image
-
+import time
 
 root = tk.Tk()
+root.title("FasTwitch")
 # Create a frame
 app = tk.Frame(root, bg="white")
 app.grid()
 # Create a label in the frame
 lmain = tk.Label(app)
 lmain.grid()
-
 # Capture from camera
 cap = cv2.VideoCapture(0)
 
@@ -25,4 +25,5 @@ def video_stream():
     lmain.after(1, video_stream)
 
 video_stream()
+time.sleep(0.1)
 root.mainloop()
