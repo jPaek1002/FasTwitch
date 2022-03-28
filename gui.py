@@ -2,9 +2,10 @@ import tkinter as tk
 from tkinter import ttk
 import cv2
 from PIL import ImageTk, Image
+import time
+
 
 LARGEFONT = ("Verdana", 35)
-currentframe = None
 
 class tkinterApp(tk.Tk):
 
@@ -96,5 +97,10 @@ class Analysis(tk.Frame):
 
         button2.grid(row=2, column=1, padx=10, pady=10)
 
+time.sleep(0.1)
 app = tkinterApp()
+app.title("FasTwitch")
 app.mainloop()
+
+
+
