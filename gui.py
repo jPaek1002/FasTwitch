@@ -62,6 +62,9 @@ class Camera(tk.Frame):
             _, frame = cap.read()
             #proess frame here
             cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+            for i in range(0,len(cv2image)):
+            	cv2image[i]=cv2image[i][::-1]
+            #cv2image = cv2image[::-1]
             img = Image.fromarray(cv2image)
             imgtk = ImageTk.PhotoImage(image=img)
             lmain.imgtk = imgtk
