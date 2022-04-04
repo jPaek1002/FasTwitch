@@ -14,13 +14,13 @@ def grow_image(frame):
     frame = cv2.filter2D(frame,-1,kernel)
     
     h,w = frame.shape[:2]
-    framenew = np.zeros((h,w))
+    framenew = img = np.zeros((h,w,1), dtype=np.uint8)
     for i in range(0,h):
         for j in range(0,w):
             if(frame[i,j]>thresh):
-                framenew[i,j]=0
-            else:
                 framenew[i,j]=255
+            else:
+                framenew[i,j]=0
     return framenew
 
 def get_pose(frame):
