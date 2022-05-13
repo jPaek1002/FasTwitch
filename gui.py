@@ -4,39 +4,20 @@ import cv2
 from PIL import ImageTk, Image
 import time
 import numpy as np
+import mediapipe as mp
 
-previousframe=None
-
-def grow_image(frame):
-    thresh=3
-    
-    kernel = np.ones((5,5),np.float32)/25
-    frame = cv2.filter2D(frame,-1,kernel)
-    
-    h,w = frame.shape[:2]
-    framenew = img = np.zeros((h,w,1), dtype=np.uint8)
-    for i in range(0,h):
-        for j in range(0,w):
-            if(frame[i,j]>thresh):
-                framenew[i,j]=255
-            else:
-                framenew[i,j]=0
-    return framenew
+mp_drawing = mp.solutions.drawing_utils
+mp_pose = mp.solutions.pose
+pose = mp_pose.Pose(min_detection_confidence=0.5,min_tracking_confidence=0.5)
 
 def get_pose(frame):
-
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) 
-    global previousframe
-    if(previousframe is None):
-        previousframe=frame
-        return (frame,"NULL")
-    
-    sobel = cv2.Sobel(src=frame, ddepth=cv2.CV_64F, dx=1, dy=1, ksize=3)
-    
-    res = cv2.add(grow_image(sobel),frame)
-    
-    previousframe=frame
-    return (res,"Null")
+    global mp_pose
+    global pose
+    #RGB = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+    RGB=frame
+    results = pose.process(RGB)
+    mp_drawing.draw_landmarks(frame,results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+    return (frame,"Null")
 
 LARGEFONT = ("Verdana", 35)
 
