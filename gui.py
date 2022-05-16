@@ -78,8 +78,8 @@ class Camera(tk.Frame):
             _, frame = cap.read()
             #proess frame here
             cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            #for i in range(0,len(cv2image)):
-            #    cv2image[i]=cv2image[i][::-1]
+            for i in range(0,len(cv2image)):
+                cv2image[i]=cv2image[i][::-1]
             #cv2image = cv2image[::-1]
             tup = get_pose(cv2image)
             pose_position.configure(text=tup[1]);
