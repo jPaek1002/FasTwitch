@@ -16,7 +16,20 @@ def get_pose(frame):
     #RGB = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
     RGB=frame
     results = pose.process(RGB)
-    mp_drawing.draw_landmarks(frame,results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+    lm = results.pose_landmarks
+    lmPose = mp_pose.PoseLandmark
+    mp_drawing.draw_landmarks(frame,lm, mp_pose.POSE_CONNECTIONS)
+    left_thigh = np.sqrt(np.square(lm.landmark[lmPose.LEFT_HIP].x)+np.square(lm.landmark[lmPose.LEFT_KNEE].x))
+    right_thigh = np.sqrt(np.square(lm.landmark[lmPose.RIGHT_HIP].x)+np.square(lm.landmark[lmPose.RIGHT_KNEE].x))
+    left_calf = np.sqrt(np.square(lm.landmark[lmPose.LEFT_ANKLE].x)+np.square(lm.landmark[lmPose.LEFT_KNEE].x))
+    right_calf = np.sqrt(np.square(lm.landmark[lmPose.RIGHT_ANKLE].x)+np.square(lm.landmark[lmPose.RIGHT_KNEE].x))
+    left_leg = np.sqrt(np.square(lm.landmark[lmPose.LEFT_ANKLE].x)+np.square(lm.landmark[lmPose.LEFT_HIP].x))
+    right_leg = np.sqrt(np.square(lm.landmark[lmPose.RIGHT_ANKLE].x)+np.square(lm.landmark[lmPose.RIGHT_HIP].x))
+    left_angle = np.arccos(np.square(left_thigh)+np.square(left_calf)-np.square(left_leg)/(2*left_thigh*left_calf))
+    right_angle = np.arccos(np.square(right_thigh)+np.square(right_calf)-np.square(right_leg)/(2*right_thigh*right_calf))
+
+
+
     return (frame,"Null")
 
 LARGEFONT = ("Verdana", 35)
