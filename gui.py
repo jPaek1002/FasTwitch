@@ -27,6 +27,8 @@ def get_pose(frame):
     right_leg = np.sqrt(np.square(lm.landmark[lmPose.RIGHT_ANKLE].x)+np.square(lm.landmark[lmPose.RIGHT_HIP].x))
     left_angle = np.arccos(np.square(left_thigh)+np.square(left_calf)-np.square(left_leg)/(2*left_thigh*left_calf))
     right_angle = np.arccos(np.square(right_thigh)+np.square(right_calf)-np.square(right_leg)/(2*right_thigh*right_calf))
+    left_angle = min([left_angle, 360 - left_angle])
+    left_angle = min([right_angle, 360 - right_angle])
 
 
 
