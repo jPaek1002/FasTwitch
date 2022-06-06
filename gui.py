@@ -6,6 +6,8 @@ import time
 import numpy as np
 import mediapipe as mp
 from math import floor
+import threading
+from playsound import playsound
 
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
@@ -63,6 +65,9 @@ class tkinterApp(tk.Tk):
         frame = self.frames[cont]
         frame.tkraise()
 
+    def get_page(self, page_class):
+        return self.frames[page_class]
+
 
 class Home(tk.Frame):
     def __init__(self, parent, controller):
@@ -78,6 +83,7 @@ class Home(tk.Frame):
         button2.grid(row=2, column=1, padx=10, pady=10)
 
 
+
 class Camera(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -89,7 +95,12 @@ class Camera(tk.Frame):
         lmain.grid()
         cap = cv2.VideoCapture(0)
         self.hold = 0
-
+        self.fps =  cap.get(cv2.CAP_PROP_FPS)
+        self.thread = threading.Thread()
+        self.angles = []
+        def ready():
+            playsound()
+            self.thread.join()
         def video_stream():
             _, frame = cap.read()
             #proess frame here
@@ -103,9 +114,13 @@ class Camera(tk.Frame):
             imgtk = ImageTk.PhotoImage(image=img)
             lmain.imgtk = imgtk
             lmain.configure(image=imgtk)
-            self.hold = self.hold + 1
-            if(self.hold == 100):
-                doSomething()
+            if tup[2]<100 or tup[3]<100 and self.hold >= 0:
+                self.hold = self.hold + 1
+            if self.hold == 40:
+                self.thread.start(target=ready, name='sus')
+                self.hold == -1
+            if self.hold < 0:
+                self.angles.append((tup[2]+tup[3])/2)
             lmain.after(12, video_stream)
 
         button1 = ttk.Button(self, text="Home",
