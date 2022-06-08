@@ -1,3 +1,4 @@
+import random
 import tkinter as tk
 from tkinter import ttk
 import cv2
@@ -22,21 +23,25 @@ def get_pose(frame):
     lmPose = mp_pose.PoseLandmark
     mp_drawing.draw_landmarks(frame,lm, mp_pose.POSE_CONNECTIONS)
     if lm is not None:
-        left_thigh = np.sqrt(np.square(lm.landmark[lmPose.LEFT_HIP].x)+np.square(lm.landmark[lmPose.LEFT_KNEE].x))
-        right_thigh = np.sqrt(np.square(lm.landmark[lmPose.RIGHT_HIP].x)+np.square(lm.landmark[lmPose.RIGHT_KNEE].x))
-        left_calf = np.sqrt(np.square(lm.landmark[lmPose.LEFT_ANKLE].x)+np.square(lm.landmark[lmPose.LEFT_KNEE].x))
-        right_calf = np.sqrt(np.square(lm.landmark[lmPose.RIGHT_ANKLE].x)+np.square(lm.landmark[lmPose.RIGHT_KNEE].x))
-        left_leg = np.sqrt(np.square(lm.landmark[lmPose.LEFT_ANKLE].x)+np.square(lm.landmark[lmPose.LEFT_HIP].x))
-        right_leg = np.sqrt(np.square(lm.landmark[lmPose.RIGHT_ANKLE].x)+np.square(lm.landmark[lmPose.RIGHT_HIP].x))
-        left_angle = np.square(left_thigh)+np.square(left_calf)-np.square(left_leg)/(2*left_thigh*left_calf)
-        left_angle = left_angle - floor(left_angle)
-        right_angle = np.square(right_thigh)+np.square(right_calf)-np.square(right_leg)/(2*right_thigh*right_calf)
-        right_angle = right_angle - floor(right_angle)
-        left = min([left_angle, 360 - left_angle])
-        right = min([right_angle, 360 - right_angle])
-
-
-    return (frame,"Null", left, right)
+        left_thigh = np.sqrt(np.square(lm.landmark[lmPose.LEFT_HIP].x-lm.landmark[lmPose.LEFT_KNEE].x)+
+                             np.square(lm.landmark[lmPose.LEFT_HIP].y-lm.landmark[lmPose.LEFT_KNEE].y))
+        right_thigh = np.sqrt(np.square(lm.landmark[lmPose.RIGHT_HIP].x - lm.landmark[lmPose.RIGHT_KNEE].x) +
+                             np.square(lm.landmark[lmPose.RIGHT_HIP].y - lm.landmark[lmPose.RIGHT_KNEE].y))
+        left_calf = np.sqrt(np.square(lm.landmark[lmPose.LEFT_ANKLE].x - lm.landmark[lmPose.LEFT_KNEE].x) +
+                             np.square(lm.landmark[lmPose.LEFT_ANKLE].y - lm.landmark[lmPose.LEFT_KNEE].y))
+        right_calf = np.sqrt(np.square(lm.landmark[lmPose.RIGHT_ANKLE].x - lm.landmark[lmPose.RIGHT_KNEE].x) +
+                             np.square(lm.landmark[lmPose.RIGHT_ANKLE].y - lm.landmark[lmPose.RIGHT_KNEE].y))
+        left_leg = np.sqrt(np.square(lm.landmark[lmPose.LEFT_ANKLE].x - lm.landmark[lmPose.LEFT_HIP].x) +
+                             np.square(lm.landmark[lmPose.LEFT_ANKLE].y - lm.landmark[lmPose.LEFT_HIP].y))
+        right_leg = np.sqrt(np.square(lm.landmark[lmPose.RIGHT_ANKLE].x - lm.landmark[lmPose.RIGHT_HIP].x) +
+                             np.square(lm.landmark[lmPose.RIGHT_ANKLE].y - lm.landmark[lmPose.RIGHT_HIP].y))
+        left_angle = np.arccos((np.square(left_thigh)+np.square(left_calf)-np.square(left_leg))/(2*left_thigh*left_calf))
+        right_angle = np.arccos((np.square(right_thigh)+np.square(right_calf)-np.square(right_leg))/(2*right_thigh*right_calf))
+        left = min([left_angle, 2 * np.pi - left_angle])
+        right = min([right_angle, 2 * np.pi - right_angle])
+        print(left, right)
+        return (frame, "Null", left, right)
+    return None
 
 LARGEFONT = ("Verdana", 35)
 
@@ -98,7 +103,9 @@ class Camera(tk.Frame):
         self.fps =  cap.get(cv2.CAP_PROP_FPS)
         self.thread = threading.Thread()
         self.angles = []
-        def ready():
+        self.delay = 0
+        self.controller = controller
+        def ready(delay):
             playsound()
             self.thread.join()
         def video_stream():
@@ -109,18 +116,25 @@ class Camera(tk.Frame):
                 cv2image[i]=cv2image[i][::-1]
             #cv2image = cv2image[::-1]
             tup = get_pose(cv2image)
-            pose_position.configure(text=tup[1]);
-            img = Image.fromarray(tup[0])
-            imgtk = ImageTk.PhotoImage(image=img)
-            lmain.imgtk = imgtk
-            lmain.configure(image=imgtk)
-            if tup[2]<100 or tup[3]<100 and self.hold >= 0:
-                self.hold = self.hold + 1
-            if self.hold == 40:
-                self.thread.start(target=ready, name='sus')
-                self.hold == -1
-            if self.hold < 0:
-                self.angles.append((tup[2]+tup[3])/2)
+            if tup is not None:
+                pose_position.configure(text=tup[1]);
+                img = Image.fromarray(tup[0])
+                imgtk = ImageTk.PhotoImage(image=img)
+                lmain.imgtk = imgtk
+                lmain.configure(image=imgtk)
+                if tup[2]<100 or tup[3]<100 and self.hold >= 0:
+                    self.hold = self.hold + 1
+                if self.hold == 1.3*self.fps:
+                    self.delay = random.uniform(0,1)
+                    self.thread.start(ready(self.delay))
+                    self.hold == -1
+                if self.hold < 0:
+                    self.angles.append(max(tup[2],tup[3])/2)
+                    self.hold = self.hold - 1
+                if self.hold == -5*self.fps:
+                    self.hold = 0
+                    self.controller.get_page('Analysis').set_angles(self.angles)
+
             lmain.after(12, video_stream)
 
         button1 = ttk.Button(self, text="Home",
@@ -138,6 +152,7 @@ class Camera(tk.Frame):
 class Analysis(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.angles = []
         label = ttk.Label(self, text="Analysis", font=LARGEFONT)
         label.grid(row=0, column=4, padx=10, pady=10)
 
@@ -151,6 +166,8 @@ class Analysis(tk.Frame):
                              command=lambda: controller.show_frame(Home))
 
         button2.grid(row=2, column=1, padx=10, pady=10)
+    def get_angles(self, angles):
+        self.angles = angles
 
 time.sleep(0.1)
 app = tkinterApp()
