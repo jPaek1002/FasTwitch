@@ -9,6 +9,13 @@ import mediapipe as mp
 from math import floor
 import threading
 from playsound import playsound
+from matplotlib import pyplot as plt
+plt.use('TkAgg')
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import (
+    FigureCanvasTkAgg,
+    NavigationToolbar2Tk
+)
 
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
@@ -39,7 +46,7 @@ def get_pose(frame):
         right_angle = np.arccos((np.square(right_thigh)+np.square(right_calf)-np.square(right_leg))/(2*right_thigh*right_calf))
         left = min([left_angle, 2 * np.pi - left_angle])
         right = min([right_angle, 2 * np.pi - right_angle])
-        print(left, right)
+        # print(left, right)
         return (frame, "Null", left, right)
     return None
 
@@ -155,7 +162,23 @@ class Analysis(tk.Frame):
         self.angles = []
         label = ttk.Label(self, text="Analysis", font=LARGEFONT)
         label.grid(row=0, column=4, padx=10, pady=10)
+        # prepare data
+        data = {
+            'Python': 11.27,
+            'C': 11.16,
+            'Java': 10.46,
+            'C++': 7.5,
+            'C#': 5.26
+        }
+        languages = data.keys()
+        popularity = data.values()
+        figure = Figure(figsize=(6, 4), dpi=100)
+        figure_canvas = FigureCanvasTkAgg(figure, self)
+        NavigationToolbar2Tk(figure_canvas, self)
+        plot = figure.add_subplot()
+        plot.plot(self.angles)
 
+        figure_canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
         button1 = ttk.Button(self, text="Camera",
                              command=lambda: controller.show_frame(Camera))
@@ -166,6 +189,8 @@ class Analysis(tk.Frame):
                              command=lambda: controller.show_frame(Home))
 
         button2.grid(row=2, column=1, padx=10, pady=10)
+
+
     def get_angles(self, angles):
         self.angles = angles
 
