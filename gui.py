@@ -10,7 +10,6 @@ from math import floor
 import threading
 from playsound import playsound
 from matplotlib import pyplot as plt
-plt.use('TkAgg')
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg,
@@ -161,7 +160,7 @@ class Analysis(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.angles = []
         label = ttk.Label(self, text="Analysis", font=LARGEFONT)
-        label.grid(row=0, column=4, padx=10, pady=10)
+        label.pack()
         # prepare data
         data = {
             'Python': 11.27,
@@ -183,12 +182,12 @@ class Analysis(tk.Frame):
         button1 = ttk.Button(self, text="Camera",
                              command=lambda: controller.show_frame(Camera))
 
-        button1.grid(row=1, column=1, padx=10, pady=10)
+        button1.pack()
 
         button2 = ttk.Button(self, text="Home",
                              command=lambda: controller.show_frame(Home))
 
-        button2.grid(row=2, column=1, padx=10, pady=10)
+        button2.pack()
 
 
     def get_angles(self, angles):
