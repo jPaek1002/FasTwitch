@@ -161,16 +161,6 @@ class Analysis(tk.Frame):
         self.angles = []
         label = ttk.Label(self, text="Analysis", font=LARGEFONT)
         label.pack()
-        # prepare data
-        data = {
-            'Python': 11.27,
-            'C': 11.16,
-            'Java': 10.46,
-            'C++': 7.5,
-            'C#': 5.26
-        }
-        languages = data.keys()
-        popularity = data.values()
         figure = Figure(figsize=(6, 4), dpi=100)
         figure_canvas = FigureCanvasTkAgg(figure, self)
         NavigationToolbar2Tk(figure_canvas, self)
