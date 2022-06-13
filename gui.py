@@ -173,7 +173,6 @@ class Analysis(tk.Frame):
         label.pack()
         figure = Figure(figsize=(6, 4), dpi=100)
         figure_canvas = FigureCanvasTkAgg(figure, self)
-        NavigationToolbar2Tk(figure_canvas, self)
         plot = figure.add_subplot()
         plot.plot(self.angles)
 
