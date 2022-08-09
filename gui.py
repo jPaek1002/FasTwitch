@@ -21,7 +21,7 @@ mp_pose = mp.solutions.pose
 pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
 
-def get_pose(frame):
+def get_pose(frame, mode):
     global mp_pose
     global pose
     # RGB = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
@@ -30,7 +30,7 @@ def get_pose(frame):
     lm = results.pose_landmarks
     lmPose = mp_pose.PoseLandmark
     mp_drawing.draw_landmarks(frame, lm, mp_pose.POSE_CONNECTIONS)
-    if lm is not None:
+    if lm is not None and mode == 0:
         left_thigh = np.sqrt(np.square(lm.landmark[lmPose.LEFT_HIP].x - lm.landmark[lmPose.LEFT_KNEE].x) +
                              np.square(lm.landmark[lmPose.LEFT_HIP].y - lm.landmark[lmPose.LEFT_KNEE].y))
         right_thigh = np.sqrt(np.square(lm.landmark[lmPose.RIGHT_HIP].x - lm.landmark[lmPose.RIGHT_KNEE].x) +
@@ -116,10 +116,14 @@ class Camera(tk.Frame):
         self.angles = []
         self.delay = 0
         self.controller = controller
+        self.mode = 0
 
         def ready(delay):
             playsound()
             self.thread.join()
+
+        def set_mode(mode):
+            self.mode = mode
 
         def video_stream():
             _, frame = cap.read()
@@ -128,7 +132,7 @@ class Camera(tk.Frame):
             for i in range(0, len(cv2image)):
                 cv2image[i] = cv2image[i][::-1]
             # cv2image = cv2image[::-1]
-            tup = get_pose(cv2image)
+            tup = get_pose(cv2image, self.mode)
             if tup is not None:
                 pose_position.configure(text=tup[1]);
                 img = Image.fromarray(tup[0])
@@ -160,6 +164,11 @@ class Camera(tk.Frame):
                              command=lambda: controller.show_frame(Analysis))
 
         button2.grid(row=2, column=1, padx=10, pady=10)
+
+        button3 = ttk.Button(self, text="Change Mode",
+                             command=lambda: set_mode((self.mode+1)%2))
+
+        button3.grid(row=2, column=1, padx=10, pady=10)
 
         video_stream()
 
