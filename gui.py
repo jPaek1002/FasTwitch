@@ -133,10 +133,12 @@ class Camera(tk.Frame):
         lmain = ttk.Label(self)
         lmain.grid()
         cap = cv2.VideoCapture(0)
+
         self.hold = 0
         self.fps = cap.get(cv2.CAP_PROP_FPS)
         self.thread = threading.Thread()
-        self.angles = []
+        self.angle = 0
+        self.speed = 0
         self.delay = 0
         self.controller = controller
         self.mode = 0
@@ -144,7 +146,7 @@ class Camera(tk.Frame):
         self.lowering = False
 
         def ready(delay):
-            playsound()
+            playsound('beep.mp3')
             self.thread.join()
 
         def set_mode(mode):
@@ -161,25 +163,27 @@ class Camera(tk.Frame):
             # cv2image = cv2image[::-1]
             tup = get_pose(cv2image, self.mode)
             if tup is not None:
-                pose_position.configure(text=self.reps)
+                pose_position.configure(text=(self.reps))
                 img = Image.fromarray(tup[0])
                 imgtk = ImageTk.PhotoImage(image=img)
                 lmain.imgtk = imgtk
                 lmain.configure(image=imgtk)
                 if self.mode == 0:
-                    if tup[1] < 5*np.pi/9 or tup[2] < 5*np.pi/9 and self.hold >= 0:
-                        self.hold = self.hold + 1
-                    if self.hold == 1.3 * self.fps:
-                        self.delay = random.uniform(0, 1)
-                        self.thread.start(ready(self.delay))
-                        self.hold == -1
-                    if self.hold < 0:
-                        self.angles.append(max(tup[1], tup[2]) / 2)
-                        self.hold = self.hold - 1
-                    if self.hold == -5 * self.fps:
-                        self.hold = 0
-                        self.controller.get_page('Analysis').set_angles(self.angles)
-                        self.controller.get_page('Analysis').set_delay(self.delay)
+                    # if tup[1] < 5*np.pi/9 or tup[2] < 5*np.pi/9 and self.hold >= 0:
+                    #     self.hold = self.hold + 1
+                    # if self.hold == 1.3 * self.fps:
+                    #     self.delay = random.uniform(0, 1)
+                    #     self.thread.start(ready(self.delay))
+                    #     self.hold == -1
+                    # if self.hold < 0:
+                    #     self.angles.append(max(tup[1], tup[2]) / 2)
+                    #     self.hold = self.hold - 1
+                    # if self.hold == -5 * self.fps:
+                    #     self.hold = 0
+                    #     self.controller.get_page('Analysis').set_angles(self.angles)
+                    #     self.controller.get_page('Analysis').set_delay(self.delay)
+                    self.speed = (min([tup[1],tup[2]]) - self.angle)* self.fps
+                    self.angle = min([tup[1],tup[2]])
                 elif self.mode == 1:
                     if self.lowering and tup[1] > np.pi-np.pi/9:
                         self.reps = self.reps + 1
